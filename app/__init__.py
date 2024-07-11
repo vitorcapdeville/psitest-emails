@@ -39,17 +39,17 @@ async def enviar_email(
     settings: Annotated[Settings, Depends(get_settings)],
     background_tasks: BackgroundTasks,
 ):
-    # headers = {
-    #     "User-ID": settings.NEUTRINO_ID,
-    #     "API-Key": settings.NEUTRINO_KEY,
-    # }
-    # async with httpx.AsyncClient() as client:
-    #     response = await client.get(f"{settings.NEUTRINO_URL}/email-validate?email={data.email}", headers=headers)
+    headers = {
+        "User-ID": settings.NEUTRINO_ID,
+        "API-Key": settings.NEUTRINO_KEY,
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{settings.NEUTRINO_URL}/email-validate?email={data.email}", headers=headers)
 
-    # if response.status_code != 200:
-    #     raise HTTPException(status_code=response.status_code, detail=response.json()["api-error-msg"])
-    # if not response.json()["valid"]:
-    #     raise HTTPException(status_code=400, detail="Invalid email")
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail=response.json()["api-error-msg"])
+    if not response.json()["valid"]:
+        raise HTTPException(status_code=400, detail="Invalid email")
 
     background_tasks.add_task(
         send_email, unquote_plus(data.email), data.subject, data.message, settings.GOOGLE_APP_PASS
